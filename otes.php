@@ -82,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['screenshot'])) {
 }
 
 function evaluateThreat($filePath, $url) {
+    global $api_key;
 
     // Read the screenshot and convert to base64 so the API can
     // receive the image as an inline data URI. If the file cannot be

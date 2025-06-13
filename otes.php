@@ -46,7 +46,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['screenshot'])) {
 }
 
 function evaluateThreat($filePath, $url) {
+    // Read the screenshot and convert to base64 so the API can
+    // receive the image as an inline data URI. If the file cannot be
+    // read we return an error message rather than sending an invalid
+    // request to the API.
+    if (!file_exists($filePath)) {
+        return json_encode(["ERROR" => "Screenshot not found"]);
+    }
 
+    $imageData = file_get_contents($filePath);
+    if ($imageData === false) {
+        return json_encode(["ERROR" => "Unable to read screenshot"]);
+    }
+
+    $base64_image = base64_encode($imageData);
 
     $payload = [
         "model" => "gpt-4.1-mini",

@@ -46,6 +46,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['screenshot'])) {
 }
 
 function evaluateThreat($filePath, $url) {
+    $availableModels = [
+        // Models that support image analysis
+        'gpt-4o',
+        'gpt-4-turbo',
+        'gpt-4-vision-preview',
+        'gpt-4.1-mini'
+    ];
+    $model = $availableModels[0];
     // Read the screenshot and convert to base64 so the API can
     // receive the image as an inline data URI. If the file cannot be
     // read we return an error message rather than sending an invalid
@@ -62,7 +70,7 @@ function evaluateThreat($filePath, $url) {
     $base64_image = base64_encode($imageData);
 
     $payload = [
-        "model" => "gpt-4.1-mini",
+        "model" => $model,
         "messages" => [
             [
                 "role" => "user",

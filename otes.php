@@ -13,8 +13,25 @@ if (!file_exists($uploadDir)) {
 
 // Handle POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['screenshot'])) {
-    $url = $_POST['url'] ?? 'unknown';
+    $url = filter_var($_POST['url'] ?? 'unknown', FILTER_SANITIZE_URL);
     $screenshot = $_FILES['screenshot'];
+
+    if ($screenshot['error'] !== UPLOAD_ERR_OK) {
+        $response = ['status' => 'error', 'message' => 'File upload error'];
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+
+    $allowedMimeTypes = ['image/jpeg', 'image/png'];
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mimeType = $finfo->file($screenshot['tmp_name']);
+    if (!in_array($mimeType, $allowedMimeTypes, true)) {
+        $response = ['status' => 'error', 'message' => 'Invalid file type'];
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
 
     // Generate a unique filename
     $fileName = uniqid() . '_' . basename($screenshot['name']);
@@ -81,7 +98,7 @@ function evaluateThreat($filePath, $url) {
                     [
                         "type" => "text",
                         "text" => "This is a screenshot of a webpage. 
-    Evaluate the likelihood that this page is a phishing site, look for known phishing queues such as domain name typo-s or utf characters in the domain, poor quality images or design, poor spelling or grammar, etc.  
+    Evaluate the likelihood that this page is a phishing site, look for known phishing cues such as domain name typos or UTF characters in the domain, poor quality images or design, poor spelling or grammar, etc.
 
     if the page is a chrome error page exit with an error message : No page to analyze. This is a browser error page.
     
@@ -122,9 +139,9 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
 $response = curl_exec($ch);
 
 if ($response === false) {
-    echo "cURL Error: " . curl_error($ch);
+    $error = curl_error($ch);
     curl_close($ch);
-    exit;
+    return json_encode(["ERROR" => "cURL Error: $error"]);
 }
 
 curl_close($ch);    

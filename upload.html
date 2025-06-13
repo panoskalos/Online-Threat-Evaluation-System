@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Screenshot for Analysis</title>
+</head>
+<body>
+    <h1>Online Threat Evaluation System</h1>
+    <form action="otes.php" method="post" enctype="multipart/form-data">
+        <div>
+            <label for="url">Page URL:</label>
+            <input type="url" id="url" name="url" placeholder="https://example.com" required>
+        </div>
+        <div>
+            <label for="screenshot">Screenshot:</label>
+            <input type="file" id="screenshot" name="screenshot" accept="image/*" required>
+        </div>
+        <div>
+            <button type="submit">Analyze</button>
+        </div>
+    </form>
+</body>
+</html>

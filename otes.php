@@ -62,8 +62,18 @@ function evaluateThreat($filePath, $url) {
      
     $base64_image = base64_encode($imageData);
 
+    $availableModels = [
+        // Models that support image analysis
+        'gpt-4o',
+        'gpt-4-turbo',
+        'gpt-4-vision-preview',
+        'gpt-4.1-mini'
+    ];
+    $model = $availableModels[3];
+
+
     $payload = [
-        "model" => "gpt-4.1-mini",
+        "model" => $model,
         "messages" => [
             [
                 "role" => "user",

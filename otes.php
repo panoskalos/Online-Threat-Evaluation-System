@@ -1,5 +1,22 @@
 <?php
-include('../init.php'); // API Logins
+// Attempt to read the OpenAI API key from the environment.
+$api_key = getenv('OPENAI_API_KEY');
+
+// Fall back to init.php for backward compatibility when the
+// environment variable is not set. This file should define $api_key.
+if ($api_key === false || $api_key === '') {
+    if (file_exists(__DIR__ . '/../init.php')) {
+        include('../init.php'); // API Logins
+    }
+}
+
+// If we still don't have an API key, return an error.
+if (!isset($api_key) || $api_key === '') {
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'OpenAI API key not configured']);
+    exit;
+}
 
 
 // Generic configuration
@@ -8,7 +25,7 @@ $logFile = __DIR__ . '/otes_log.txt';
 
 // Create upload directory if it doesn't exist
 if (!file_exists($uploadDir)) {
-    mkdir($uploadDir, 0777, true);
+    mkdir($uploadDir, 0755, true);
 }
 
 // Handle POST request
@@ -33,8 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['screenshot'])) {
         exit;
     }
 
-    // Generate a unique filename
-    $fileName = uniqid() . '_' . basename($screenshot['name']);
+    // Generate a sanitized, unique filename to avoid directory traversal
+    $originalName = basename($screenshot['name']);
+    $sanitizedName = preg_replace('/[^A-Za-z0-9_\-.]/', '_', $originalName);
+    $fileName = uniqid() . '_' . $sanitizedName;
     $targetFile = $uploadDir . $fileName;
 
     // Move uploaded file
@@ -144,7 +163,15 @@ if ($response === false) {
     return json_encode(["ERROR" => "cURL Error: $error"]);
 }
 
-curl_close($ch);    
+curl_close($ch);
+
+// Validate JSON response
+$decoded = json_decode($response, true);
+if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
+    return json_encode([
+        "ERROR" => "Invalid JSON response: " . json_last_error_msg()
+    ]);
+} 
 
 
 return $response;
